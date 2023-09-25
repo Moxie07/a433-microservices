@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+    item-app:
+        # Menerapkan peraturan supaya item-app selalu restart ketika terhenti.
+        restart: always
+        # Mengambil image yang akan digunakan sebagai dasar dari item-app.
+        image: ghcr.io/moxie07/item-app:v1
+        # Membuka port item app supaya bisa diakses oleh host, port 80 dari host akan merujuk ke port 8080 milik item-app .
+        ports:
+            - 80:8080
+        # Mengatur item-app supaya hanya akan berjalan setelah item-db berjalan terlebih dahulu.
+        depends_on:
+            - item-db
+    item-db:
+        # Menerapkan peraturan supaya item-db selalu restart ketika terhenti.
+        restart: always
+        # Mengambil image yang akan digunakan sebagai dasar dari item-db.
+        image: mongo:3
+        volumes:
+            # Memasang volume app-db ke /data/db dalam item-db supaya data tersebut menjadi persisten.
+            - app-db:/data/db
+            # Memasang semua file di dalam folder mongo-init yang berada di current directory, ke /docker-entrypoint-initdb.d/ ,
+            # yang mana nantinya akan dieksekusi untuk membuat database yang akan digunakan.
+            - ./mongo-init/:/docker-entrypoint-initdb.d/:ro
+volumes:
+    # Membuat volume yang bernama app-db yang akan digunakan oleh item-db .
+    app-db:
